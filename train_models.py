@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import (accuracy_score, roc_auc_score, precision_score,
                              recall_score, f1_score, matthews_corrcoef)
+from sklearn.linear_model import LogisticRegression
 
 SEED = 2026
 TARGET = "diagnosis"   # 1 = malignant, 0 = benign
@@ -49,6 +50,12 @@ def train_and_save(name, model, X_train, y_train, X_test, y_test):
     return evaluate(name, model, X_test, y_test)
 
 
+def build_logistic_regression():
+    # scaling inside the pipeline so it is applied automatically at prediction time
+    return Pipeline([("sc", StandardScaler()),
+                     ("clf", LogisticRegression(max_iter=1000, random_state=SEED))])
+
+
 if __name__ == "__main__":
     df = load_data()
     df.to_csv("full_dataset.csv", index=False)
@@ -56,4 +63,9 @@ if __name__ == "__main__":
     pd.concat([X_test, y_test], axis=1).to_csv("test_data.csv", index=False)
 
     rows = []
-    print('Data saved:', df.shape, X_train.shape, X_test.shape)
+    rows.append(train_and_save("Logistic Regression", build_logistic_regression(), X_train, y_train, X_test, y_test))
+
+    res = pd.DataFrame(rows).round(4)
+    res.to_csv("model/metrics_table.csv", index=False)
+    print(res.to_string(index=False))
+    print("\nShape:", df.shape, "| train:", X_train.shape, "test:", X_test.shape)

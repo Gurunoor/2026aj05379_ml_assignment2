@@ -10,6 +10,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import (accuracy_score, roc_auc_score, precision_score,
                              recall_score, f1_score, matthews_corrcoef)
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 
 SEED = 2026
 TARGET = "diagnosis"   # 1 = malignant, 0 = benign
@@ -56,6 +57,11 @@ def build_logistic_regression():
                      ("clf", LogisticRegression(max_iter=1000, random_state=SEED))])
 
 
+def build_decision_tree():
+    # depth / leaf limits keep the tree from over-fitting
+    return DecisionTreeClassifier(max_depth=5, min_samples_leaf=3, random_state=SEED)
+
+
 if __name__ == "__main__":
     df = load_data()
     df.to_csv("full_dataset.csv", index=False)
@@ -64,6 +70,7 @@ if __name__ == "__main__":
 
     rows = []
     rows.append(train_and_save("Logistic Regression", build_logistic_regression(), X_train, y_train, X_test, y_test))
+    rows.append(train_and_save("Decision Tree", build_decision_tree(), X_train, y_train, X_test, y_test))
 
     res = pd.DataFrame(rows).round(4)
     res.to_csv("model/metrics_table.csv", index=False)

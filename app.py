@@ -31,6 +31,9 @@ with st.sidebar:
     st.header("Controls")
     uploaded = st.file_uploader("Upload test CSV (features + diagnosis)", type="csv")
     model_name = st.selectbox("Choose a model", list(MODEL_FILES))
+    compare_all = st.checkbox("Also compare all 5 models", value=True)
+    st.markdown("---")
+    st.markdown("Tip: use `test_data.csv` from the repo.")
 
 if uploaded is None:
     st.info("⬅️ Upload a test CSV in the sidebar to begin.")
@@ -87,3 +90,13 @@ with tab3:
     ax.plot([0, 1], [0, 1], "--", color="grey")
     ax.set_xlabel("False positive rate"); ax.set_ylabel("True positive rate"); ax.legend()
     st.pyplot(fig)
+
+if compare_all:
+    st.subheader("All models on this test data")
+    table = []
+    for name, path in MODEL_FILES.items():
+        _, _, m = score(load_model(path))
+        table.append({"ML Model Name": name, **m})
+    tdf = pd.DataFrame(table).set_index("ML Model Name").round(4)
+    st.dataframe(tdf.style.highlight_max(axis=0, color="#d6c8f5"), use_container_width=True)
+    st.bar_chart(tdf[["Accuracy", "F1", "MCC"]])

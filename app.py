@@ -50,3 +50,21 @@ except KeyError as e:
 
 st.write(f"Loaded **{df.shape[0]} rows × {df.shape[1]} columns** – model selected: **{model_name}**")
 st.dataframe(df.head(10), use_container_width=True)
+
+
+# ---------------- Metrics ----------------
+def score(m):
+    pred = m.predict(X)
+    proba = m.predict_proba(X)[:, 1]
+    return pred, proba, {
+        "Accuracy": accuracy_score(y, pred), "AUC": roc_auc_score(y, proba),
+        "Precision": precision_score(y, pred), "Recall": recall_score(y, pred),
+        "F1": f1_score(y, pred), "MCC": matthews_corrcoef(y, pred)}
+
+
+pred, proba, metrics = score(model)
+
+st.subheader(f"Results – {model_name}")
+cols = st.columns(6)
+for c, (k, v) in zip(cols, metrics.items()):
+    c.metric(k, f"{v:.4f}")
